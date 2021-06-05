@@ -30,9 +30,9 @@ kotlin {
     cocoapods {
         summary = "Swift Coroutine interop tests"
         homepage = "https://touchlab.co"
-        framework {
-            isStatic = false
-        }
+//        framework {
+//            isStatic = false
+//        }
     }
 }
 
