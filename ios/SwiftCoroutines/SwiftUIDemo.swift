@@ -8,8 +8,8 @@ class ThingModel: ObservableObject {
     
     var cancellables = Set<AnyCancellable>()
     
-    init(_ repository: ThingRepositoryIos) {
-        createPublisher(flowWrapper: repository.getThingStreamWrapper(count: 100, succeed: true))
+    init(_ repository: ThingRepository) {
+        createPublisher(for: repository.getThingStreamNative(count: 100, succeed: true))
             .replaceError(with: Thing(count: -1))
             .receive(on: DispatchQueue.main)
             .sink { [weak self] thing in self?.thing = thing }
@@ -25,7 +25,7 @@ struct ThingView : View {
     @ObservedObject
     var thingModel: ThingModel
     
-    init(_ repository: ThingRepositoryIos) {
+    init(_ repository: ThingRepository) {
         thingModel = ThingModel(repository)
     }
     

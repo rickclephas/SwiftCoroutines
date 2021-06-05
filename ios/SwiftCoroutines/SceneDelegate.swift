@@ -16,7 +16,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
-    let repository = ThingRepositoryIos(repository: ThingRepository())
+    let repository = ThingRepository()
     var disposable: Disposable? = nil
     var cancellable: AnyCancellable? = nil
     
@@ -45,7 +45,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
         
-        disposable = createObservable(flowWrapper: repository.getThingStreamWrapper(count: 10, succeed: true))
+        disposable = createObservable(for: repository.getThingStreamNative(count: 10, succeed: true))
             .subscribe(
                 onNext: { thing in
                     NSLog("RxSwift next: \(thing)")
@@ -61,7 +61,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 }
             )
         
-        cancellable = createPublisher(flowWrapper: repository.getThingStreamWrapper(count: 10, succeed: true))
+        cancellable = createPublisher(for: repository.getThingStreamNative(count: 10, succeed: true))
             .handleEvents(receiveCancel: { NSLog("Combine canceled!") })
             .sink(
                 receiveCompletion: { completion in

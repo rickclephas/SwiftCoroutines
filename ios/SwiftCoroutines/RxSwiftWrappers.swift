@@ -8,47 +8,34 @@
 
 import Foundation
 import RxSwift
-import shared
 
-func createSingle<T>(suspendWrapper: SuspendWrapper<T>) -> Single<T> {
-    return Single<T>.create { single in
-        let job: Kotlinx_coroutines_coreJob = suspendWrapper.subscribe(
-            onSuccess: { item in single(.success(item)) },
-            onThrow: { error in single(.error(KotlinError(error))) }
-        )
-        return Disposables.create { job.cancel(cause: nil) }
+func createSingle<Output, Failure: Error, Unit>(for collect: @escaping NativeSuspend<Output, Failure, Unit>) -> Single<Output> {
+    return Single<Output>.create { single in
+        let cancel = collect({ output, result in
+            single(.success(output))
+            return result()
+        }, { error, result in
+            single(.error(error))
+            return result()
+        })
+        return Disposables.create { _ = cancel() }
     }
 }
 
-func createObservable<T>(flowWrapper: FlowWrapper<T>) -> Observable<T> {
-    return Observable<T>.create { observer in
-        let job: Kotlinx_coroutines_coreJob = flowWrapper.subscribe(
-            onEach: { item in observer.on(.next(item)) },
-            onComplete: { observer.on(.completed) },
-            onThrow: { error in observer.on(.error(KotlinError(error))) }
-        )
-        return Disposables.create { job.cancel(cause: nil) }
-    }
-}
-
-func createOptionalSingle<T>(suspendWrapper: NullableSuspendWrapper<T>) -> Single<T?> {
-    return Single<T?>.create { single in
-        let job: Kotlinx_coroutines_coreJob = suspendWrapper.subscribe(
-            onSuccess: { item in single(.success(item)) },
-            onThrow: { error in single(.error(KotlinError(error))) }
-        )
-        return Disposables.create { job.cancel(cause: nil) }
-    }
-}
-
-func createOptionalObservable<T>(flowWrapper: NullableFlowWrapper<T>) -> Observable<T?> {
-    return Observable<T?>.create { observer in
-        let job: Kotlinx_coroutines_coreJob = flowWrapper.subscribe(
-            onEach: { item in observer.on(.next(item)) },
-            onComplete: { observer.on(.completed) },
-            onThrow: { error in observer.on(.error(KotlinError(error))) }
-        )
-        return Disposables.create { job.cancel(cause: nil) }
+func createObservable<Output, Failure: Error, Unit>(for collect: @escaping NativeFlow<Output, Failure, Unit>) -> Observable<Output> {
+    return Observable<Output>.create { observer in
+        let cancel = collect({ item, result in
+            observer.on(.next(item))
+            return result()
+        }, { error, result in
+            if let error = error {
+                observer.on(.error(error))
+            } else {
+                observer.on(.completed)
+            }
+            return result()
+        })
+        return Disposables.create { _ = cancel() }
     }
 }
 

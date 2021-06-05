@@ -1,40 +1,24 @@
 package co.touchlab.example
 
-import co.touchlab.swiftcoroutines.FlowWrapper
-import co.touchlab.swiftcoroutines.NullableFlowWrapper
-import co.touchlab.swiftcoroutines.NullableSuspendWrapper
-import co.touchlab.swiftcoroutines.SuspendWrapper
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import co.touchlab.swiftcoroutines.*
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
-import kotlin.native.concurrent.freeze
 
-class ThingRepositoryIos(private val repository: ThingRepository) {
-    private val supervisorJob = SupervisorJob()
-    private val scope: CoroutineScope = CoroutineScope(supervisorJob + Dispatchers.Default)
+// Helps verify cancellation in tests
+fun ThingRepository.countActiveJobs() =
+    nativeCoroutineScope.coroutineContext[Job]?.children?.filter { it.isActive }?.count() ?: 0
 
-    init {
-        freeze()
-    }
+fun ThingRepository.dispose() =
+    nativeCoroutineScope.coroutineContext[Job]?.cancelChildren()
 
-    fun getThingWrapper(succeed: Boolean) =
-        SuspendWrapper(scope) { repository.getThing(succeed) }
+fun ThingRepository.getThingNative(succeed: Boolean) =
+    nativeSuspend(nativeCoroutineScope) { getThing(succeed) }
 
-    fun getThingStreamWrapper(count: Int, succeed: Boolean) =
-        FlowWrapper(scope, repository.getThingStream(count, succeed))
+fun ThingRepository.getThingStreamNative(count: Int, succeed: Boolean) =
+    getThingStream(count, succeed).asNativeFlow(nativeCoroutineScope)
 
-    fun getNullableThingWrapper(succeed: Boolean) =
-        NullableSuspendWrapper(scope) { repository.getNullableThing(succeed) }
+fun ThingRepository.getNullableThingNative(succeed: Boolean) =
+    nativeSuspend(nativeCoroutineScope) { getNullableThing(succeed) }
 
-    fun getNullableThingStreamWrapper(count: Int, succeed: Boolean) =
-        NullableFlowWrapper(scope, repository.getNullableThingStream(count, succeed))
-
-    // Helps verify cancellation in tests
-    fun countActiveJobs() = scope.coroutineContext[Job]?.children?.filter { it.isActive }?.count() ?: 0
-
-    fun dispose() {
-        supervisorJob.cancelChildren()
-    }
-}
+fun ThingRepository.getNullableThingStreamNative(count: Int, succeed: Boolean) =
+    getNullableThingStream(count, succeed).asNativeFlow(nativeCoroutineScope)

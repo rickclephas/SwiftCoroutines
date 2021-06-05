@@ -10,26 +10,26 @@ import shared
 import Combine
 
 class ThingRepositoryCombine {
-    private let delegate: ThingRepositoryIos
+    private let delegate: ThingRepository
     
     init() {
-        delegate = ThingRepositoryIos(repository: ThingRepository())
+        delegate = ThingRepository()
     }
     
-    func getThing(succeed: Bool) -> AnyPublisher<Thing, KotlinError> {
-        createFuture(suspendWrapper: delegate.getThingWrapper(succeed: succeed))
+    func getThing(succeed: Bool) -> AnyPublisher<Thing, Error> {
+        createFuture(for: delegate.getThingNative(succeed: succeed))
     }
 
-    func getThingStream(count: Int32, succeed: Bool) -> AnyPublisher<Thing, KotlinError> {
-        createPublisher(flowWrapper: delegate.getThingStreamWrapper(count: count, succeed: succeed))
+    func getThingStream(count: Int32, succeed: Bool) -> AnyPublisher<Thing, Error> {
+        createPublisher(for: delegate.getThingStreamNative(count: count, succeed: succeed))
     }
 
-    func getOptionalThing(succeed: Bool) -> AnyPublisher<Thing?, KotlinError> {
-        createOptionalFuture(suspendWrapper: delegate.getNullableThingWrapper(succeed: succeed))
+    func getOptionalThing(succeed: Bool) -> AnyPublisher<Thing?, Error> {
+        createFuture(for: delegate.getNullableThingNative(succeed: succeed))
     }
 
-    func getOptionalThingStream(count: Int32, succeed: Bool) -> AnyPublisher<Thing?, KotlinError> {
-        createOptionalPublisher(flowWrapper: delegate.getNullableThingStreamWrapper(count: count, succeed: succeed))
+    func getOptionalThingStream(count: Int32, succeed: Bool) -> AnyPublisher<Thing?, Error> {
+        createPublisher(for: delegate.getNullableThingStreamNative(count: count, succeed: succeed))
     }
     
     func countActiveJobs() -> Int32 {

@@ -32,7 +32,13 @@ class CombineWrappersTests: XCTestCase {
         let future = repository.getThing(succeed: false)
 
         let output = try await(future)
-        XCTAssertEqual(output, .failure(items: [], error: KotlinError(KotlinThrowable(message: "oh no!"))))
+        switch output {
+        case .failure(let items, let error):
+            XCTAssertEqual(items, [])
+            XCTAssertEqual(error.localizedDescription, "oh no!")
+        default:
+            XCTFail()
+        }
     }
     
     func testPublisherCall() throws {
@@ -53,7 +59,13 @@ class CombineWrappersTests: XCTestCase {
         let publisher = repository.getThingStream(count: 1, succeed: false)
         
         let output = try await(publisher)
-        XCTAssertEqual(output, .failure(items: [Thing(count: 0)], error: KotlinError(KotlinThrowable(message: "oops!"))))
+        switch output {
+        case .failure(let items, let error):
+            XCTAssertEqual(items, [Thing(count: 0)])
+            XCTAssertEqual(error.localizedDescription, "oops!")
+        default:
+            XCTFail()
+        }
     }
     
     func testBackgroundFutureCall() throws {

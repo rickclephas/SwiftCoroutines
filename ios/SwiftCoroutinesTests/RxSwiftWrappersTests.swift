@@ -47,8 +47,7 @@ class RxSwiftWrappersTests: XCTestCase {
             XCTFail()
         case .failed(let elements, let error):
             XCTAssertEqual(elements, [])
-            let kotlinError: KotlinError = error as! KotlinError
-            XCTAssertEqual(kotlinError.throwable.message, "oh no!")
+            XCTAssertEqual(error.localizedDescription, "oh no!")
         }
     }
     
@@ -82,8 +81,7 @@ class RxSwiftWrappersTests: XCTestCase {
             XCTFail()
         case .failed(let elements, let error):
             XCTAssertEqual(elements, [Thing(count: 0)])
-            let kotlinError: KotlinError = error as! KotlinError
-            XCTAssertEqual(kotlinError.throwable.message, "oops!")
+            XCTAssertEqual(error.localizedDescription, "oops!")
         }
     }
     

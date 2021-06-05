@@ -3,84 +3,49 @@ package co.touchlab.swiftcoroutines
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import platform.Foundation.NSError
+import platform.Foundation.NSLocalizedDescriptionKey
 import kotlin.native.concurrent.freeze
 
-class SuspendWrapper<T : Any>(
-    private val scope: CoroutineScope,
-    private val suspender: suspend () -> T
-) {
-    init {
-        freeze()
-    }
+typealias NativeFlow<T> = ((T, () -> Unit) -> Unit, (NSError?, () -> Unit) -> Unit) -> () -> Unit
 
-    fun subscribe(
-        onSuccess: (item: T) -> Unit,
-        onThrow: (error: Throwable) -> Unit
-    ) = scope.launch {
-        try {
-            onSuccess(suspender().freeze())
-        } catch (error: Throwable) {
-            onThrow(error.freeze())
+internal fun <T> Flow<T>.asNativeFlow(scope: CoroutineScope): NativeFlow<T> {
+    return (collect@{ onItem: (T, () -> Unit) -> Unit, onComplete: (NSError?, () -> Unit) -> Unit ->
+        val result = {}.freeze()
+        val job = scope.launch {
+            try {
+                collect { onItem(it.freeze(), result) }
+                onComplete(null, result)
+            } catch (e: Exception) {
+                onComplete(e.asNSError().freeze(), result)
+            }
         }
-    }.freeze()
+        return@collect { job.cancel() }.freeze()
+    }).freeze()
 }
 
-class NullableSuspendWrapper<T>(
-    private val scope: CoroutineScope,
-    private val suspender: suspend () -> T
-) {
-    init {
-        freeze()
-    }
+typealias NativeSuspend<T> = ((T, () -> Unit) -> Unit, (NSError, () -> Unit) -> Unit) -> () -> Unit
 
-    fun subscribe(
-        onSuccess: (item: T) -> Unit,
-        onThrow: (error: Throwable) -> Unit
-    ) = scope.launch {
-        try {
-            onSuccess(suspender().freeze())
-        } catch (error: Throwable) {
-            onThrow(error.freeze())
+internal fun <T> nativeSuspend(scope: CoroutineScope, block: suspend () -> T): NativeSuspend<T> {
+    return (collect@{ onResult: (T, () -> Unit) -> Unit, onError: (NSError, () -> Unit) -> Unit ->
+        val result = {}.freeze()
+        val job = scope.launch {
+            try {
+                onResult(block().freeze(), result)
+            } catch (e: Exception) {
+                onError(e.asNSError().freeze(), result)
+            }
         }
-    }.freeze()
+        return@collect { job.cancel() }.freeze()
+    }).freeze()
 }
 
-class FlowWrapper<T : Any>(
-    private val scope: CoroutineScope,
-    private val flow: Flow<T>
-) {
-    init {
-        freeze()
+internal fun Exception.asNSError(): NSError {
+    val userInfo = mutableMapOf<Any?, Any>()
+    userInfo["KotlinException"] = this
+    val message = message
+    if (message != null) {
+        userInfo[NSLocalizedDescriptionKey] = message
     }
-
-    fun subscribe(
-        onEach: (item: T) -> Unit,
-        onComplete: () -> Unit,
-        onThrow: (error: Throwable) -> Unit
-    ) = flow
-        .onEach { onEach(it.freeze()) }
-        .catch { onThrow(it.freeze()) } // catch{} before onCompletion{} or else completion hits rx first and ends stream
-        .onCompletion { onComplete() }
-        .launchIn(scope)
-        .freeze()
-}
-
-class NullableFlowWrapper<T>(
-    private val scope: CoroutineScope,
-    private val flow: Flow<T>
-) {
-    init {
-        freeze()
-    }
-
-    fun subscribe(
-        onEach: (item: T) -> Unit,
-        onComplete: () -> Unit,
-        onThrow: (error: Throwable) -> Unit
-    ) = flow
-        .onEach { onEach(it.freeze()) }
-        .catch { onThrow(it.freeze()) } // catch{} before onCompletion{} or else completion hits rx first and ends stream
-        .onCompletion { onComplete() }
-        .launchIn(scope)
-        .freeze()
+    return NSError.errorWithDomain("KotlinException", 0, userInfo)
 }

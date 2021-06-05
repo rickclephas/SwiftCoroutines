@@ -1,10 +1,17 @@
 package co.touchlab.example
 
+import co.touchlab.example.co.touchlab.swiftcoroutines.freeze
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class ThingRepository {
+
+    internal val nativeCoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     suspend fun getThing(succeed: Boolean): Thing {
         delay(100)
         if (succeed) {
@@ -37,6 +44,10 @@ class ThingRepository {
             emit(if (it % 2 == 0) Thing(it) else null)
         }
         if (!succeed) error("oops!")
+    }
+
+    init {
+        freeze()
     }
 }
 

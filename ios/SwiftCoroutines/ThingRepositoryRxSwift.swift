@@ -10,26 +10,26 @@ import shared
 import RxSwift
 
 class ThingRepositoryRxSwift {
-    private let delegate: ThingRepositoryIos
+    private let delegate: ThingRepository
     
     init() {
-        self.delegate = ThingRepositoryIos(repository: ThingRepository())
+        self.delegate = ThingRepository()
     }
     
     func getThing(succeed: Bool) -> Single<Thing> {
-        createSingle(suspendWrapper: delegate.getThingWrapper(succeed: succeed))
+        createSingle(for: delegate.getThingNative(succeed: succeed))
     }
 
     func getThingStream(count: Int32, succeed: Bool) -> Observable<Thing> {
-        createObservable(flowWrapper: delegate.getThingStreamWrapper(count: count, succeed: succeed))
+        createObservable(for: delegate.getThingStreamNative(count: count, succeed: succeed))
     }
 
     func getOptionalThing(succeed: Bool) -> Single<Thing?> {
-        createOptionalSingle(suspendWrapper: delegate.getNullableThingWrapper(succeed: succeed))
+        createSingle(for: delegate.getNullableThingNative(succeed: succeed))
     }
 
     func getOptionalThingStream(count: Int32, succeed: Bool) -> Observable<Thing?> {
-        createOptionalObservable(flowWrapper: delegate.getNullableThingStreamWrapper(count: count, succeed: succeed))
+        createObservable(for: delegate.getNullableThingStreamNative(count: count, succeed: succeed))
     }
     
     func countActiveJobs() -> Int32 {
