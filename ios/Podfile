@@ -10,7 +10,7 @@ target 'SwiftCoroutines' do
     pod 'RxCocoa', '~> 5'
 end
 target 'SwiftCoroutinesTests' do
-    pod 'shared', :path => '../shared/'
+#    pod 'shared', :path => '../shared/'
     pod 'RxSwift', '~> 5'
     pod 'RxCocoa', '~> 5'
     
