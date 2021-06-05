@@ -1,7 +1,7 @@
 ### Swift/Coroutines interop
 
 Slightly modified version of [the code](https://github.com/touchlab/SwiftCoroutines) from [@russhwolf](https://github.com/russhwolf) 
-his [blog post](https://dev.to/russhwolf/kotlin-coroutines-and-swift-revisited-1i8f) 
+his [blog post](https://dev.to/touchlab/kotlin-coroutines-and-swift-revisited-j5h) 
 on Coroutines and Swift interop. 
 
 It uses generics and closures to decouple the Swift code from the Kotlin code.
