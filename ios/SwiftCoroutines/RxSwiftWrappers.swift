@@ -11,12 +11,12 @@ import RxSwift
 
 func createSingle<Output, Failure: Error, Unit>(for collect: @escaping NativeSuspend<Output, Failure, Unit>) -> Single<Output> {
     return Single<Output>.create { single in
-        let cancel = collect({ output, result in
+        let cancel = collect({ output, unit in
             single(.success(output))
-            return result()
-        }, { error, result in
+            return unit
+        }, { error, unit in
             single(.error(error))
-            return result()
+            return unit
         })
         return Disposables.create { _ = cancel() }
     }
@@ -24,16 +24,16 @@ func createSingle<Output, Failure: Error, Unit>(for collect: @escaping NativeSus
 
 func createObservable<Output, Failure: Error, Unit>(for collect: @escaping NativeFlow<Output, Failure, Unit>) -> Observable<Output> {
     return Observable<Output>.create { observer in
-        let cancel = collect({ item, result in
+        let cancel = collect({ item, unit in
             observer.on(.next(item))
-            return result()
-        }, { error, result in
+            return unit
+        }, { error, unit in
             if let error = error {
                 observer.on(.error(error))
             } else {
                 observer.on(.completed)
             }
-            return result()
+            return unit
         })
         return Disposables.create { _ = cancel() }
     }

@@ -12,12 +12,12 @@ class ThingRepositorySwiftCallbacks {
         onSuccess: @escaping (Thing) -> Void,
         onThrow: @escaping (Error) -> Void
     ) -> () -> Void {
-        let cancel = delegate.getThingNative(succeed: succeed)({ output, result in
+        let cancel = delegate.getThingNative(succeed: succeed)({ output, unit in
             onSuccess(output)
-            return result()
-        }, { error, result in
+            return unit
+        }, { error, unit in
             onThrow(error)
-            return result()
+            return unit
         })
         return { _ = cancel() }
     }
@@ -29,16 +29,16 @@ class ThingRepositorySwiftCallbacks {
         onComplete: @escaping () -> Void,
         onThrow: @escaping (Error) -> Void
     ) -> () -> Void {
-        let cancel = delegate.getThingStreamNative(count: count, succeed: succeed)({ item, result in
+        let cancel = delegate.getThingStreamNative(count: count, succeed: succeed)({ item, unit in
             onEach(item)
-            return result()
-        }, { error, result in
+            return unit
+        }, { error, unit in
             if let error = error {
                 onThrow(error)
             } else {
                 onComplete()
             }
-            return result()
+            return unit
         })
         return { _ = cancel() }
     }
@@ -48,12 +48,12 @@ class ThingRepositorySwiftCallbacks {
         onSuccess: @escaping (Thing?) -> Void,
         onThrow: @escaping (Error) -> Void
     ) -> () -> Void {
-        let cancel = delegate.getNullableThingNative(succeed: succeed)({ output, result in
+        let cancel = delegate.getNullableThingNative(succeed: succeed)({ output, unit in
             onSuccess(output)
-            return result()
-        }, { error, result in
+            return unit
+        }, { error, unit in
             onThrow(error)
-            return result()
+            return unit
         })
         return { _ = cancel() }
     }
@@ -65,16 +65,16 @@ class ThingRepositorySwiftCallbacks {
         onComplete: @escaping () -> Void,
         onThrow: @escaping (Error) -> Void
     ) -> () -> Void {
-        let cancel = delegate.getNullableThingStreamNative(count: count, succeed: succeed)({ item, result in
+        let cancel = delegate.getNullableThingStreamNative(count: count, succeed: succeed)({ item, unit in
             onEach(item)
-            return result()
-        }, { error, result in
+            return unit
+        }, { error, unit in
             if let error = error {
                 onThrow(error)
             } else {
                 onComplete()
             }
-            return result()
+            return unit
         })
         return { _ = cancel() }
     }

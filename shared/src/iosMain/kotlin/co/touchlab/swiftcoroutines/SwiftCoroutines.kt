@@ -7,33 +7,33 @@ import platform.Foundation.NSError
 import platform.Foundation.NSLocalizedDescriptionKey
 import kotlin.native.concurrent.freeze
 
-typealias NativeFlow<T> = ((T, () -> Unit) -> Unit, (NSError?, () -> Unit) -> Unit) -> () -> Unit
+typealias NativeFlow<T> = ((T, Unit) -> Unit, (NSError?, Unit) -> Unit) -> () -> Unit
 
 internal fun <T> Flow<T>.asNativeFlow(scope: CoroutineScope): NativeFlow<T> {
-    return (collect@{ onItem: (T, () -> Unit) -> Unit, onComplete: (NSError?, () -> Unit) -> Unit ->
-        val result = {}.freeze()
+    return (collect@{ onItem: (T, Unit) -> Unit, onComplete: (NSError?, Unit) -> Unit ->
+        val unit = Unit.freeze()
         val job = scope.launch {
             try {
-                collect { onItem(it.freeze(), result) }
-                onComplete(null, result)
+                collect { onItem(it.freeze(), unit) }
+                onComplete(null, unit)
             } catch (e: Exception) {
-                onComplete(e.asNSError().freeze(), result)
+                onComplete(e.asNSError().freeze(), unit)
             }
         }
         return@collect { job.cancel() }.freeze()
     }).freeze()
 }
 
-typealias NativeSuspend<T> = ((T, () -> Unit) -> Unit, (NSError, () -> Unit) -> Unit) -> () -> Unit
+typealias NativeSuspend<T> = ((T, Unit) -> Unit, (NSError, Unit) -> Unit) -> () -> Unit
 
 internal fun <T> nativeSuspend(scope: CoroutineScope, block: suspend () -> T): NativeSuspend<T> {
-    return (collect@{ onResult: (T, () -> Unit) -> Unit, onError: (NSError, () -> Unit) -> Unit ->
-        val result = {}.freeze()
+    return (collect@{ onResult: (T, Unit) -> Unit, onError: (NSError, Unit) -> Unit ->
+        val unit = Unit.freeze()
         val job = scope.launch {
             try {
-                onResult(block().freeze(), result)
+                onResult(block().freeze(), unit)
             } catch (e: Exception) {
-                onError(e.asNSError().freeze(), result)
+                onError(e.asNSError().freeze(), unit)
             }
         }
         return@collect { job.cancel() }.freeze()
