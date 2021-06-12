@@ -20,6 +20,9 @@ func createPublisher<T>(flowWrapper: FlowWrapper<T>) -> AnyPublisher<T, KotlinEr
         } onThrow: { (error) in
             subject.send(completion: .failure(KotlinError(error)))
         }
+        for i in 0...100000 {
+            print("Delaying \(i)")
+        }
         return subject.handleEvents(receiveCancel: {
             job.cancel(cause: nil)
         })
