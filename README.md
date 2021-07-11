@@ -1,5 +1,8 @@
 ### Swift/Coroutines interop
 
+> :memo: checkout [KMP-NativeCoroutines](https://github.com/rickclephas/KMP-NativeCoroutines)! A Library to use Kotlin Coroutines from Swift code in KMP apps.  
+> It uses the same principles to provide interoperability with RxSwift, Combine and Swift 5.5 Async/Await.
+
 Slightly modified version of [the code](https://github.com/touchlab/SwiftCoroutines) from [@russhwolf](https://github.com/russhwolf) 
 his [blog post](https://dev.to/touchlab/kotlin-coroutines-and-swift-revisited-j5h) 
 on Coroutines and Swift interop. 
